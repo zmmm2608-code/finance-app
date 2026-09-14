@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="eba74pB73l8PpaVal11GGB">
+<head data-page-node-id="BVXB0hRChnqcCjI4mAzfE8">
+<meta charset="UTF-8" data-page-node-id="q2nhlMwfri4OLIN1qG5rWY">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="QB7zNsVvAltr9cr7UPMqTN">
+<title>个人交易系统</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f7f9;--card:#ffffff;--text:#1a1d24;--muted:#7a8290;--border:#e4e7ec;
+    --accent:#185FA5;--accent-soft:#E6F1FB;
+    --up:#d64541;--down:#2e9e5b;--warn:#ba7517;
+  }
+  [data-theme="dark"]{
+    --bg:#14161a;--card:#1d2026;--text:#e8eaed;--muted:#9aa2ad;--border:#2c313a;
+    --accent:#85B7EB;--accent-soft:#0C447C;
+    --up:#f07b76;--down:#5dbb82;--warn:#ef9f27;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
+  header{position:sticky;top:0;z-index:50;background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .brand{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .brand .logo{color:var(--accent);font-size:18px}
+  nav{display:flex;gap:4px;flex-wrap:wrap}
+  nav button{border:none;background:none;color:var(--muted);padding:7px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:.15s;white-space:nowrap}
+  nav button:hover{color:var(--text);background:var(--accent-soft)}
+  nav button.active{color:var(--accent);background:var(--accent-soft)}
+  .head-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:8px 13px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:500;transition:.15s;white-space:nowrap}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(1.06);color:#fff}
+  .btn.small{padding:5px 9px;font-size:12px}
+  .btn.danger{color:var(--up);border-color:var(--up)}
+  .btn.danger:hover{background:var(--up);color:#fff}
+  main{padding:24px;max-width:1180px;margin:0 auto}
+  section{display:none}
+  section.active{display:block}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+  .card h3{font-size:15px;font-weight:600;margin-bottom:12px}
+  .muted{color:var(--muted);font-size:12px}
+  .grid{display:grid;gap:16px}
+  .g-2{grid-template-columns:1fr 1fr}
+  .g-stats{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+  .stat .label{font-size:12px;color:var(--muted)}
+  .stat .value{font-size:22px;font-weight:600;margin:4px 0}
+  .stat .sub{font-size:12px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12px;white-space:nowrap}
+  tr:hover td{background:var(--accent-soft)}
+  .up{color:var(--up)}
+  .down{color:var(--down)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+  .tag.win{background:#fdeaea;color:var(--up)}
+  .tag.loss{background:#e8f7ee;color:var(--down)}
+  .tag.flat{background:var(--bg);color:var(--muted)}
+  .tag.bad{background:#fdeaea;color:var(--up)}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:12px;color:var(--muted)}
+  .field input,.field select,.field textarea{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;background:var(--card);color:var(--text);font-family:inherit}
+  .field textarea{min-height:60px;resize:vertical}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+  .field-row{display:flex;gap:12px;flex-wrap:wrap}
+  .field-row .field{flex:1;min-width:140px}
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .toolbar .spacer{flex:1}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted)}
+  .empty .big{font-size:40px;margin-bottom:10px}
+  .flow{display:flex;flex-direction:column;gap:10px}
+  .flow-step{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+  .flow-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+  .flow-step .t{font-weight:600;margin-bottom:3px}
+  .rule-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+  .rule-item:last-child{border-bottom:none}
+  .rule-cat{flex-shrink:0;font-size:11px;padding:2px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent);white-space:nowrap;margin-top:2px}
+  .rule-text{flex:1}
+  .rule-ops{flex-shrink:0;display:flex;gap:4px}
+  .sync-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--card);font-size:12px;cursor:pointer;color:var(--text);transition:all .15s}
+  .sync-badge:hover{border-color:var(--accent)}
+  .sync-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);position:relative;flex-shrink:0}
+  .sync-badge .dot::before{content:"";position:absolute;inset:-3px;border-radius:50%;border:1px solid currentColor;opacity:.18}
+  .sync-badge.state-ok{color:var(--down)}
+  .sync-badge.state-ok .dot{background:var(--down)}
+  .sync-badge.state-saving{color:var(--accent)}
+  .sync-badge.state-saving .dot{background:var(--accent);animation:pulse 1.1s infinite}
+  .sync-badge.state-pending{color:#b45309;border-color:#fbbf24;background:#fffbeb}
+  .sync-badge.state-pending .dot{background:#f59e0b}
+  .sync-badge.state-error{color:var(--up);border-color:var(--up)}
+  .sync-badge.state-error .dot{background:var(--up)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  #toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-50px);background:var(--down);color:#fff;padding:8px 16px;border-radius:999px;font-size:13px;opacity:0;transition:all .25s;z-index:200;pointer-events:none}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (max-width:720px){
+    main{padding:14px}
+    .g-2{grid-template-columns:1fr}
+    .card{padding:14px}
+    header{gap:8px}
+    nav button{padding:6px 9px;font-size:12px}
+    table{font-size:12px}
+  }
+</style>
+</head>
+<body data-page-node-id="MGl6A4j1UnSDK7KWDxHRty">
+<header data-page-node-id="P2UDdZYKXuKyaN3a1Ex6ga">
+  <div class="brand" data-page-node-id="EU26intULfVEKZ30qOGxio"><span class="logo" data-page-node-id="Yzh3tNNQCUSA321S9bdG3R">◈</span> 个人交易系统</div>
+  <nav id="nav" data-page-node-id="jM27WgFPjzCEoKeYv2C1ev">
+    <button data-tab="framework" class="active" data-page-node-id="o6Ki6FWamZiLyjsghM45EG">交易框架</button>
+    <button data-tab="marketlog" data-page-node-id="YF52x3zuKVjY3PuZ6uHNRj">行情记录</button>
+    <button data-tab="trades" data-page-node-id="OFdIRBp7tZt7rJkD4xmAB3">交易记录</button>
+    <button data-tab="analysis" data-page-node-id="KJGY0tntMgp53jfLSO0xvM">复盘分析</button>
+    <button data-tab="binance">币安结算</button>
+    <button data-tab="settings" data-page-node-id="qhSNJmY8wpC8dmHSRvnFPk">设置</button>
+  </nav>
+  <div class="head-actions" data-page-node-id="W8n6P3h2BdjFz0wOfwjxay">
+    <button class="sync-badge" id="syncBadge" onclick="syncBadgeClick()" title="点击查看同步状态">
+      <span class="dot" id="syncBadgeDot"></span>
+      <span class="txt" id="syncBadgeTxt">未配置</span>
+    </button>
+    <button class="btn" id="btnTheme" onclick="toggleTheme()" title="切换主题" data-page-node-id="Hg1P530aPL6gQaIma2X1to">🌙</button>
+  </div>
+</header>
+
+<main data-page-node-id="KZG7uBcd2cJ2pJBY6eIZrP">
+  <section id="tab-framework" class="active" data-page-node-id="QU4KcEPiYANBX9gz3Fw9PC"></section>
+  <section id="tab-marketlog" data-page-node-id="rbVNXXe4XEFNCWXXto3ULl"></section>
+  <section id="tab-trades" data-page-node-id="UGgwCckCA1R02ShIIsKGG2"></section>
+  <section id="tab-analysis" data-page-node-id="yOglNRxb1FMBr2VXCR8Wvq"></section>
+  <section id="tab-settings" data-page-node-id="e9K9TkO3FkjS5BYeIV6QpI"></section>
+  <section id="tab-binance">
+    <div class="card">
+      <h3>币安合约(U本位) · 只读自动结算</h3>
+      <p class="muted">粘贴你的币安 <b>只读</b> API Key / Secret（强烈建议绑定 IP 白名单、使用子账户专用 key）。Secret 仅存于本机浏览器 localStorage，不会写入网页源码；但同设备可见，请妥善保管。结算指标由本页面根据逐笔成交实时计算。</p>
+      <div class="field"><label>API Key</label><input id="bKey" type="text" placeholder="只读权限 Key" autocomplete="off"></div>
+      <div class="field"><label>Secret</label><input id="bSecret" type="password" placeholder="只读权限 Secret" autocomplete="off"></div>
+      <div class="field"><label>交易对（逗号分隔，如 BTCUSDT,ETHUSDT）</label><input id="bSymbols" type="text" placeholder="BTCUSDT,ETHUSDT"></div>
+      <div class="toolbar">
+        <button class="btn primary" onclick="bSaveCfg()">保存配置</button>
+        <button class="btn" onclick="bRun()">拉取并结算</button>
+        <button class="btn small" onclick="bClearAuto()" title="清除此前自动导入的记录（手动录入的不受影响）。切换「合并加仓」开关后必须先清一次再重新导入">清除 AUTO 记录</button>
+        <label class="muted" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap" title="勾选：同方向连续加仓按加权均价合并，一次持仓周期只算 1 条记录（推荐，笔数少）&#10;不勾选：每次加仓单独算 1 条记录（笔数会暴涨，但能看到加仓节奏）">
+          <input type="checkbox" id="bAggregate" checked style="width:auto;margin:0">
+          合并加仓
+        </label>
+        <span class="spacer"></span>
+        <span id="bStatus" class="muted"></span>
+      </div>
+    </div>
+    <div id="bResult"></div>
+  </section>
+</main>
+
+<div id="modal-root" data-page-node-id="7H7f5ka3UAlrrrymxC85L0"></div>
+<div id="toast" data-page-node-id="GbmkrfQBiEuoyPRIfnUCfT">✓ 已保存</div>
+
+<script>
+"use strict";
+const LS_KEY = "ts_system_v1";
+const THEME_KEY = "ts_theme";
+
+/* ============ 常量 ============ */
+const MARKETS = ["A股","港股","美股","加密货币","期货"];
+const PHASES = ["进攻(趋势)","震荡","防守(下跌)"];
+const CYCLES = ["短线","波段","中长线"];
+const DIRECTIONS = ["做多","做空"];
+const STRATEGIES = ["趋势突破","趋势回踩","震荡低吸","震荡高抛","反转","其他"];
+const EXEC_QUALITY = ["到位","一般","违反纪律"];
+const RULE_CATS = ["仓位","止损","心态","市场","执行"];
+
+/* ============ 默认数据 ============ */
+function defaultRules(){
+  return [
+    {id:"r1",category:"仓位",text:"仓位由可承受风险反推，不由主观信心正推——信心高不等于该重仓。"},
+    {id:"r2",category:"仓位",text:"单笔风险预算 ÷ 止损距离 = 仓位；止损距离越远，仓位越小。"},
+    {id:"r3",category:"仓位",text:"分仓推进，不要一把梭：试错仓 → 确认仓 → 加仓仓。"},
+    {id:"r4",category:"止损",text:"止损位写完就是写完，触发后禁止改规则、禁止事后宽松。"},
+    {id:"r5",category:"止损",text:"三维止损：价格位 + 逻辑失效 + 时间止损，三者独立触发。"},
+    {id:"r6",category:"止损",text:"区分噪音与真失效：快速插针是诱空，连续破位才是真失效。"},
+    {id:"r7",category:"心态",text:"成本价不是市场关心的变量，市场只关心当前位置该不该持有。"},
+    {id:"r8",category:"心态",text:"「回到成本就卖」是心理锚，不是市场决定的卖点。"},
+    {id:"r9",category:"心态",text:"浮盈被打回成本是退出理由，不是死扛理由。"},
+    {id:"r10",category:"市场",text:"先定市场（进攻/震荡/防守），再定策略，最后选股——顺序不能反。"},
+    {id:"r11",category:"市场",text:"市场性质决定打法：不能用趋势策略做震荡市，也不能用震荡策略做趋势市。"},
+    {id:"r12",category:"市场",text:"环境不支持时，敢于不进场、敢于降仓。"},
+    {id:"r13",category:"执行",text:"每笔交易先写计划（入场/止损/目标/失效条件），没有计划不下单。"},
+    {id:"r14",category:"执行",text:"记录每一笔，复盘才有数据；不复盘的交易经验不会积累。"}
+  ];
+}
+function defaultDB(){
+  return {version:1, marketLog:[], trades:[], rules:defaultRules()};
+}
+
+/* ============ Supabase 云同步（与个人财务管家共用 Supabase 配置） ============ */
+// 关键设计：两个工具共用一个 Supabase 项目、一张 user_data 表
+// 通过 data._meta.tool 区分（"finance" / "trade-system"），互不干扰
+const SUPABASE_CFG_KEY = "pfm_supabase_cfg";     // 与财务管家共用 key，避免重复配置
+const SUPABASE_TABLE   = "user_data";
+const PRODUCT_ID       = "trade-system";
+let sbClient = null;
+let sbUser   = null;
+let autoSyncTimer = null;
+const AUTO_SYNC_DELAY = 2000;
+
+function sbGetCfg(){ try{ return JSON.parse(localStorage.getItem(SUPABASE_CFG_KEY)) || {}; }catch(e){ return {}; } }
+function sbSetCfg(cfg){ localStorage.setItem(SUPABASE_CFG_KEY, JSON.stringify(cfg)); }
+function sbClearCfg(){ localStorage.removeItem(SUPABASE_CFG_KEY); sbClient=null; }
+
+async function sbEnsureClient(){
+  if(sbClient) return sbClient;
+  const { url, anonKey } = sbGetCfg();
+  if(!url || !anonKey){ throw new Error("尚未配置 Supabase，请先在「设置 → 云同步」中保存 Project URL 与 anon key"); }
+  if(!window.supabase){ throw new Error("Supabase SDK 还未加载，请检查网络后刷新页面"); }
+  sbClient = window.supabase.createClient(url, anonKey, { auth: { storageKey: "ts-sb-auth", persistSession: true, autoRefreshToken: true } });
+  return sbClient;
+}
+async function sbWaitForUser(){
+  try{
+    const { data } = await sbClient.auth.getSession();
+    return (data && data.session && data.session.user) || null;
+  }catch(e){ return null; }
+}
+
+/* ============ 存储 ============ */
+function load(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      return Object.assign(defaultDB(), d);
+    }
+  }catch(e){}
+  return defaultDB();
+}
+let DB = load();
+function save(){
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(DB));
+    showToast("✓ 已保存");
+    queueAutoSync();
+  }catch(e){ alert("保存失败："+e.message); }
+}
+let _toastTimer = null;
+function showToast(msg){
+  const el = document.getElementById("toast");
+  if(!el) return;
+  el.textContent = msg || "✓ 已保存";
+  el.classList.add("show");
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>el.classList.remove("show"), 1400);
+}
+
+/* ============ 同步徽章 ============ */
+function setSyncBadge(state, text){
+  const b = document.getElementById("syncBadge");
+  const t = document.getElementById("syncBadgeTxt");
+  if(!b || !t) return;
+  b.classList.remove("state-ok","state-saving","state-pending","state-error");
+  if(state && state !== "idle") b.classList.add("state-"+state);
+  if(text) t.textContent = text;
+}
+function syncBadgeClick(){ switchTab("settings"); setTimeout(()=>{ const ta=document.getElementById("tab-settings"); if(ta) ta.scrollIntoView({block:"start"}); }, 50); }
+function setSyncStatus(txt, isErr){
+  const el = document.getElementById("syncStatus");
+  if(el){ el.style.color = isErr ? "var(--up)" : "var(--down)"; el.textContent = txt ? (" · " + txt) : ""; }
+  if(!txt){ setSyncBadge(null, "已登录"); }
+  else if(isErr){ setSyncBadge("error", txt.replace(/^.+?: /, "失败 ").slice(0, 18)); }
+  else if(txt.includes("✅") || txt.includes("已")){ setSyncBadge("ok", "已同步"); }
+  else{ setSyncBadge("saving", txt.replace(/^.+?: /, "").slice(0, 18)); }
+}
+
+async function sbLoadRow(){
+  if(!sbUser){ sbUser = await sbWaitForUser(); }
+  if(!sbUser) return null;
+  const { data, error } = await sbClient.from(SUPABASE_TABLE).select("data").eq("user_id", sbUser.id).maybeSingle();
+  if(error){ console.warn("sbLoadRow:", error); return null; }
+  return data ? data.data : null;
+}
+async function sbSaveRow(payload){
+  if(!sbUser){ sbUser = await sbWaitForUser(); }
+  if(!sbUser) throw new Error("未登录");
+  const { error } = await sbClient.from(SUPABASE_TABLE).upsert({
+    user_id: sbUser.id,
+    data: payload,
+    updated_at: new Date().toISOString()
+  });
+  if(error) throw error;
+}
+async function sbDeleteRow(){
+  if(!sbUser) throw new Error("未登录");
+  const { error } = await sbClient.from(SUPABASE_TABLE).delete().eq("user_id", sbUser.id);
+  if(error) throw error;
+}
+
+/* ============ 业务数据 ↔ 云 payload ============ */
+// 两个工具共用 user_data 表，data 顶层就是 JSONB
+// 区别靠 _meta.tool；同一账户的两个工具 data 是两个独立对象，不会互相覆盖
+function dbToCloudPayload(){
+  const o = JSON.parse(JSON.stringify(DB));
+  o._meta = { tool: PRODUCT_ID, schema: 1, savedAt: Date.now() };
+  return o;
+}
+function cloudPayloadToDB(p){
+  if(!p) return;
+  // 校验 _meta.tool 必须匹配本工具（防止错把财务管家数据塞进交易系统）
+  if(p._meta && p._meta.tool && p._meta.tool !== PRODUCT_ID){
+    console.warn("云端数据来自另一个工具("+p._meta.tool+")，已忽略。");
+    return;
+  }
+  DB = Object.assign(defaultDB(), {
+    marketLog: p.marketLog || [],
+    trades: p.trades || [],
+    rules: (p.rules && p.rules.length) ? p.rules : DB.rules
+  });
+}
+
+function queueAutoSync(){
+  if(!sbClient || !sbUser) return;
+  setSyncBadge("pending", "待同步");
+  clearTimeout(autoSyncTimer);
+  autoSyncTimer = setTimeout(async ()=>{
+    setSyncBadge("saving", "同步中...");
+    try{
+      await sbSaveRow(dbToCloudPayload());
+      setSyncStatus("自动同步 ✅ " + new Date().toLocaleTimeString());
+    }catch(e){
+      setSyncStatus("自动同步失败: " + e.message, true);
+      setSyncBadge("error", "同步失败");
+    }
+  }, AUTO_SYNC_DELAY);
+}
+
+/* ============ 工具 ============ */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function money(n){
+  n = +n||0;
+  const neg = n<0;
+  const s = Math.abs(n).toLocaleString("zh-CN",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return (neg?"-":"")+s;
+}
+function pct(n){ n=+n||0; return (n>=0?"+":"")+n.toFixed(2)+"%"; }
+function pnlClass(n){ return (+n||0)>=0 ? "up" : "down"; }
+function uid(){ return "id-"+Date.now()+"-"+Math.random().toString(36).slice(2,7); }
+function today(){ return new Date().toISOString().slice(0,10); }
+
+/* ============ 主题 ============ */
+function initTheme(){
+  const t = localStorage.getItem(THEME_KEY)||"light";
+  document.documentElement.setAttribute("data-theme",t);
+  document.getElementById("btnTheme").textContent = t==="dark"?"☀️":"🌙";
+}
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme",cur);
+  localStorage.setItem(THEME_KEY,cur);
+  document.getElementById("btnTheme").textContent = cur==="dark"?"☀️":"🌙";
+}
+
+/* ============ 币安合约(U本位) 只读自动结算 ============ */
+// 安全说明：Key/Secret 仅存于本机 localStorage，绝不写入网页源码；请用【只读权限】+【IP 白名单】+ 子账户 key
+const BINANCE_CFG_KEY = "ts_binance_cfg";
+const FAPI = "https://fapi.binance.com";
+function bGetCfg(){ try{ return JSON.parse(localStorage.getItem(BINANCE_CFG_KEY))||{}; }catch(e){ return {}; } }
+function bSetCfg(c){ localStorage.setItem(BINANCE_CFG_KEY, JSON.stringify(c)); }
+
+async function bHmac(msg, secret){
+  if(!crypto || !crypto.subtle) throw new Error("当前环境不支持本地签名，请通过 https 页面(GitHub Pages)打开本工具");
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), {name:"HMAC", hash:"SHA-256"}, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(msg));
+  return [...new Uint8Array(sig)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function bApi(path, params){
+  const cfg = bGetCfg();
+  if(!cfg.apiKey || !cfg.secret) throw new Error("请先填写并保存币安只读 API Key / Secret");
+  const qs = new URLSearchParams(Object.assign({timestamp:Date.now(), recvWindow:60000}, params||{})).toString();
+  const sig = await bHmac(qs, cfg.secret);
+  const url = FAPI + path + "?" + qs + "&signature=" + sig;
+  const res = await fetch(url, {headers:{"X-MBX-APIKEY": cfg.apiKey}});
+  const j = await res.json();
+  if(j && j.code) throw new Error("币安错误 " + j.code + ": " + (j.msg||""));
+  return j;
+}
+async function bPub(path, params){
+  const qs = new URLSearchParams(params||{}).toString();
+  const res = await fetch(FAPI + path + (qs?"?"+qs:""));
+  return res.json();
+}
+/* ---- FIFO 开平仓配对：把逐笔成交(fill)还原成一笔笔完整的 round-trip 交易 ----
+   币安每一笔 fill 都带 realizedPnl：只有「平仓」那笔才非 0，开仓/加仓那笔恒为 0。
+   原逻辑把 realizedPnl==0 当成「平手」，会把大量开仓单误算成平手交易，污染胜率。
+   这里按 FIFO(先进先出) 把开仓 lot 与反向平仓配对，并把手续费按数量比例分摊进去。 */
+function buildRoundTrips(fills, aggregate){
+  // 按持仓模式分组：单向持仓=BOTH，双向持仓=LONG/SHORT 各自独立配对
+  const groups = {};
+  fills.forEach(f=>{
+    const ps = f.positionSide || "BOTH";
+    (groups[ps] = groups[ps] || []).push(f);
+  });
+
+  const roundTrips = [];
+  const openLots = [];
+
+  Object.keys(groups).forEach(ps=>{
+    const arr = groups[ps].slice().sort((a,b)=>(a.time-b.time) || (a.id-b.id));
+    let lots = [];  // FIFO 开仓队列
+    let pos = 0;    // 当前净持仓（带符号：正=多，负=空）
+
+    arr.forEach(f=>{
+      const qty = Math.abs(+f.qty || 0);
+      if(qty <= 1e-9) return;
+      const price = +f.price || 0;
+      const signed = (f.side === "SELL" ? -1 : 1) * qty;
+      const rp  = +f.realizedPnl || 0;              // 该 fill 的已实现盈亏（平仓时非 0）
+      const fee = Math.abs(+f.commission || 0);
+      const newPos = pos + signed;
+
+      if(pos === 0 || Math.sign(pos) === Math.sign(signed)){
+        // ① 开仓 / 同向加仓
+        // 聚合模式：同向加仓合并进最近的 lot 并按加权均价计算。
+        // 否则「加仓 N 次再一次性平仓」会被拆成 N 条入场/出场/盈亏比几乎一样的记录，
+        // 这正是笔数暴涨(如 305 笔成交 → 247 条)且盈亏%清一色相同的原因。
+        if(aggregate && lots.length){
+          const last = lots[lots.length-1];
+          if(Math.sign(last.side) === Math.sign(signed)){
+            const tq = last.qty + qty;
+            last.price = (last.price*last.qty + price*qty) / tq;   // 加权平均入场价
+            last.qty = tq;
+            last.fee += fee;
+            last.addIds = (last.addIds||[]).concat(f.id);          // 记录被合并的加仓单号
+            pos = newPos;
+            return;
+          }
+        }
+        lots.push({qty, price, time:f.time, id:f.id, fee, side: signed>0?1:-1});
+        pos = newPos;
+      }else{
+        // ② 反向 → 平仓（按 FIFO 从最早的 lot 开始吃）
+        //    注意：realizedPnl 只对应「真正平仓的那部分」，手续费按「总成交量」收，两者分母不同。
+        //    例如 SELL 2 平掉 1 个多仓再反手开 1 个空：rp 全归那 1 个平仓量，手续费却要按 2 份摊。
+        const closeTotal = Math.abs(signed) || 1;                  // 本次成交总量（手续费分母）
+        const closeQty   = Math.min(closeTotal, Math.abs(pos));     // 其中真正平仓的量（rp 分母）
+        let remain = closeQty;
+
+        while(remain > 1e-9 && lots.length){
+          const lot = lots[0];
+          const takeQty = Math.min(lot.qty, remain);
+          const rpRatio  = takeQty / (closeQty || 1);        // rp 分摊：按平仓量
+          const feeRatio = takeQty / closeTotal;             // 手续费分摊：按总成交量
+          const lotRatio = takeQty / (lot.qty || 1);         // 开仓单手续费：按该 lot 占比
+
+          const grossPnl = rp * rpRatio;                     // 分摊到的已实现盈亏（未扣费）
+          const openFee = lot.fee * lotRatio;                // 开仓手续费分摊
+          const closeFee = fee * feeRatio;                   // 平仓手续费分摊
+          const totalFee = openFee + closeFee;
+          const pnl = grossPnl - totalFee;                   // 净盈亏 = 毛盈亏 − 双边手续费
+
+          const isLong = lot.side > 0;
+          const entry = lot.price, exit = price;
+          const pnlPct = entry>0 ? ((isLong ? (exit-entry)/entry : (entry-exit)/entry) * 100) : 0;
+
+          roundTrips.push({
+            symbol: f.symbol,
+            direction: isLong ? "做多" : "做空",
+            positionSide: ps,
+            openTime: lot.time,
+            closeTime: f.time,
+            entryPrice: entry,
+            exitPrice: exit,
+            quantity: takeQty,
+            grossPnl: grossPnl,
+            fee: totalFee,
+            pnl: pnl,
+            pnlPct: pnlPct,
+            holdMs: f.time - lot.time,
+            autoKey: "b_" + f.symbol + "_" + lot.id + "_" + f.id
+          });
+
+          lot.qty -= takeQty;
+          lot.fee -= openFee;
+          remain  -= takeQty;
+          if(lot.qty <= 1e-9) lots.shift();
+        }
+
+        pos = newPos;
+
+        // ③ 平完仍有余量 → 反向开新仓
+        if(newPos !== 0 && Math.sign(newPos) === Math.sign(signed)){
+          const revQty = Math.abs(newPos);
+          lots.push({qty: revQty, price, time:f.time, id:f.id, fee: fee*(revQty/closeTotal), side: signed>0?1:-1});
+        }
+      }
+    });
+
+    // 循环结束后仍在队列里的 = 当前未平持仓
+    lots.forEach(l=>{
+      openLots.push({
+        symbol: (arr[0]||{}).symbol,
+        direction: l.side>0 ? "做多" : "做空",
+        positionSide: ps,
+        qty: l.qty,
+        entryPrice: l.price,
+        openTime: l.time,
+        fee: l.fee
+      });
+    });
+  });
+
+  roundTrips.sort((a,b)=>a.closeTime-b.closeTime);
+  return {roundTrips, openLots};
+}
+
+/* 基于配对后的 round-trip 计算真实战绩（这才是复盘该看的数字） */
+function computeRTStats(rt){
+  const wins   = rt.filter(r=>r.pnl >  1e-9);
+  const losses = rt.filter(r=>r.pnl < -1e-9);
+  const flats  = rt.filter(r=>Math.abs(r.pnl) <= 1e-9);
+  const decided = wins.length + losses.length;
+  const winSum  = wins.reduce((s,r)=>s+r.pnl,0);
+  const lossSum = Math.abs(losses.reduce((s,r)=>s+r.pnl,0));
+  const avgWin  = wins.length   ? winSum/wins.length   : 0;
+  const avgLoss = losses.length ? lossSum/losses.length : 0;
+  const winRate = decided ? wins.length/decided*100 : 0;
+  const pf = lossSum>0 ? winSum/lossSum : (winSum>0 ? Infinity : 0);
+  const ev = decided ? (winRate/100*avgWin - (1-winRate/100)*avgLoss) : 0;
+  return {
+    n: rt.length, wins: wins.length, losses: losses.length, flats: flats.length, decided,
+    winRate, avgWin, avgLoss, pf, ev, winSum, lossSum,
+    totalPnl: rt.reduce((s,r)=>s+r.pnl,0),
+    totalFee: rt.reduce((s,r)=>s+r.fee,0),
+    avgHoldMs: rt.length ? rt.reduce((s,r)=>s+r.holdMs,0)/rt.length : 0,
+    maxWin: rt.reduce((m,r)=>Math.max(m,r.pnl), 0),
+    maxLoss: rt.reduce((m,r)=>Math.min(m,r.pnl), 0)
+  };
+}
+
+/* 按持仓时长粗判交易周期，导入时填 cycle 字段 */
+function bGuessCycle(ms){
+  const h = ms/3600000;
+  if(h < 4)  return "短线";
+  if(h < 72) return "波段";
+  return "中长线";
+}
+function bFmtHold(ms){
+  if(!ms || ms<0) return "-";
+  const m = Math.floor(ms/60000);
+  if(m < 60) return m + "分";
+  const h = Math.floor(m/60);
+  if(h < 24) return h + "小时" + (m%60 ? (m%60)+"分" : "");
+  return Math.floor(h/24) + "天" + (h%24 ? (h%24)+"小时" : "");
+}
+
+async function bSettle(symbols, aggregate){
+  const acc = await bApi("/fapi/v2/account");
+  const prices = {};
+  await Promise.all(symbols.map(async s=>{
+    try{ const p = await bPub("/fapi/v1/ticker/price", {symbol:s}); if(p && p.price) prices[s] = +p.price; }catch(e){}
+  }));
+  let totalRealized = 0, win = 0, loss = 0, flat = 0, trades = 0, winSum = 0, lossSum = 0;
+  const bySymbol = {};
+  const allFills = [];
+  for(const s of symbols){
+    let fromId = null, all = [];
+    while(true){
+      const p = {symbol:s, limit:1000}; if(fromId) p.fromId = fromId;
+      let arr = [];
+      try{ arr = await bApi("/fapi/v1/userTrades", p); }catch(e){ arr = []; }
+      if(!Array.isArray(arr) || !arr.length) break;
+      all = all.concat(arr);
+      if(arr.length < 1000) break;
+      fromId = arr[arr.length-1].id + 1;
+    }
+    allFills.push.apply(allFills, all);
+    bySymbol[s] = {realized:0, win:0, loss:0, flat:0};
+    for(const t of all){
+      const rp = +t.realizedPnl;
+      totalRealized += rp; bySymbol[s].realized += rp; trades++;
+      if(rp > 0){ win++; winSum += rp; bySymbol[s].win++; }
+      else if(rp < 0){ loss++; lossSum += (-rp); bySymbol[s].loss++; }
+      else { flat++; bySymbol[s].flat++; }
+    }
+  }
+  const totalClose = win + loss;
+  const winRate = totalClose ? (win/totalClose*100) : 0;
+  const pf = lossSum ? (winSum/lossSum) : (winSum>0 ? Infinity : 0);
+  const avgWin = win ? winSum/win : 0;
+  const avgLoss = loss ? lossSum/loss : 0;
+  const unrealized = (acc.positions||[]).filter(p=>+p.positionAmt!==0).reduce((a,p)=>a+(+p.unRealizedProfit||0),0);
+  // FIFO 配对：把逐笔成交还原成完整开平仓交易，并算真实战绩
+  const {roundTrips, openLots} = buildRoundTrips(allFills, aggregate);
+  const rtStat = computeRTStats(roundTrips);
+  return {acc, prices, totalRealized, win, loss, flat, trades, winRate, pf, avgWin, avgLoss, unrealized, bySymbol, roundTrips, openLots, rtStat, aggregate: !!aggregate};
+}
+function bSaveCfg(){
+  bSetCfg({
+    apiKey: document.getElementById("bKey").value.trim(),
+    secret: document.getElementById("bSecret").value.trim(),
+    symbols: document.getElementById("bSymbols").value.split(",").map(s=>s.trim().toUpperCase()).filter(Boolean)
+  });
+  showToast("✓ 已保存");
+}
+function initBinance(){
+  const c = bGetCfg();
+  if(document.getElementById("bKey")) document.getElementById("bKey").value = c.apiKey||"";
+  if(document.getElementById("bSecret")) document.getElementById("bSecret").value = c.secret||"";
+  if(document.getElementById("bSymbols")) document.getElementById("bSymbols").value = (c.symbols||[]).join(",");
+}
+let LAST_B_RESULT = null;   // 最近一次结算结果，供「同步到交易记录」使用
+async function bRun(){
+  const cfg = bGetCfg();
+  if(!cfg.apiKey || !cfg.secret || !cfg.symbols || !cfg.symbols.length){
+    document.getElementById("bStatus").textContent = "请先填写并保存配置（Key / Secret / 交易对）";
+    return;
+  }
+  document.getElementById("bStatus").textContent = "正在拉取并结算...";
+  try{
+    const aggEl = document.getElementById("bAggregate");
+    const r = await bSettle(cfg.symbols, aggEl ? aggEl.checked : false);
+    LAST_B_RESULT = r;
+    document.getElementById("bResult").innerHTML = bRender(r);
+    document.getElementById("bStatus").textContent = "更新于 " + new Date().toLocaleTimeString();
+  }catch(e){
+    document.getElementById("bStatus").textContent = "失败：" + e.message + "（若为网络错误，请确认浏览器可连通 fapi.binance.com，必要时用代理）";
+  }
+}
+
+/* 清除此前自动导入的记录（手动录入的不受影响）。
+   切换「合并加仓」开关后必须先清一次：两种模式算出的 autoKey 不同，
+   不去重机制拦不住，会导致新旧记录并存、统计翻倍。 */
+function bClearAuto(){
+  const n = DB.trades.filter(t=>t.source==="binance-auto").length;
+  if(!n){ showToast("没有自动导入的记录"); return; }
+  if(!confirm("将删除 " + n + " 条 AUTO 自动导入记录。\n手动录入的交易不受影响，确定继续？")) return;
+  DB.trades = DB.trades.filter(t=>t.source!=="binance-auto");
+  save(); renderAll();
+  showToast("✓ 已清除 " + n + " 条，可重新导入");
+}
+
+/* 把配对好的 round-trip 写入 DB.trades，打通币安数据与复盘分析。
+   用 autoKey(交易对+开仓单号+平仓单号) 去重，重复点击不会重复导入。 */
+function bImportToJournal(){
+  if(!LAST_B_RESULT || !LAST_B_RESULT.roundTrips || !LAST_B_RESULT.roundTrips.length){
+    showToast("请先点「拉取并结算」");
+    return;
+  }
+  const rts = LAST_B_RESULT.roundTrips;
+  const exist = new Set(DB.trades.map(t=>t.autoKey).filter(Boolean));
+  let added = 0, skipped = 0;
+  rts.forEach(rt=>{
+    if(exist.has(rt.autoKey)){ skipped++; return; }
+    const pnl = +(+rt.pnl).toFixed(2);
+    DB.trades.push({
+      id: uid(),
+      autoKey: rt.autoKey,
+      source: "binance-auto",
+      date: new Date(rt.closeTime).toISOString().slice(0,10),
+      market: "加密货币",
+      symbol: rt.symbol,
+      name: rt.symbol,
+      direction: rt.direction,
+      cycle: bGuessCycle(rt.holdMs),
+      strategy: "",
+      entryPrice: +(+rt.entryPrice).toFixed(8),
+      exitPrice: +(+rt.exitPrice).toFixed(8),
+      quantity: +(+rt.quantity).toFixed(8),
+      pnl: pnl,
+      pnlPct: +(+rt.pnlPct).toFixed(2),
+      result: pnl>0 ? "盈利" : pnl<0 ? "亏损" : "平手",
+      execQuality: "",
+      emotionNote: "",
+      lesson: "",
+      fee: +(+rt.fee).toFixed(4),
+      holdMs: rt.holdMs
+    });
+    added++;
+  });
+  save();
+  renderAll();
+  showToast(added ? ("✓ 已导入 " + added + " 笔" + (skipped ? "（跳过重复 " + skipped + "）" : "")) : "无新增（全部已导入过）");
+}
+function bRender(r){
+  const m = n => (n>=0?"+":"") + (+n).toLocaleString("zh-CN",{maximumFractionDigits:2});
+  const cls = n => n>=0 ? "up":"down";
+  const equity = (+r.acc.totalWalletBalance||0) + (+r.acc.totalUnrealizedProfit||0);
+  let h = `<div class="grid g-stats">
+    <div class="card stat"><div class="label">账户权益(USDT)</div><div class="value">${equity.toFixed(2)}</div><div class="sub">可用 ${r.acc.availableBalance}</div></div>
+    <div class="card stat"><div class="label">总已实现盈亏</div><div class="value ${cls(r.totalRealized)}">${m(r.totalRealized)}</div><div class="sub">${r.trades} 笔成交</div></div>
+    <div class="card stat"><div class="label">未实现浮盈</div><div class="value ${cls(r.unrealized)}">${m(r.unrealized)}</div></div>
+    <div class="card stat"><div class="label">胜率</div><div class="value">${r.winRate.toFixed(1)}%</div><div class="sub">盈 ${r.win} / 亏 ${r.loss}</div></div>
+    <div class="card stat"><div class="label">盈亏比(Profit Factor)</div><div class="value">${isFinite(r.pf)?r.pf.toFixed(2):"∞"}</div><div class="sub">均盈 ${m(r.avgWin)} / 均亏 ${m(-r.avgLoss)}</div></div>
+  </div>`;
+  h += `<div class="card"><h3>按交易对结算</h3><table><thead><tr><th>交易对</th><th>已实现盈亏</th><th>盈利笔</th><th>亏损笔</th><th>现价</th></tr></thead><tbody>`;
+  for(const s in r.bySymbol){
+    const b = r.bySymbol[s];
+    h += `<tr><td>${s}</td><td class="${cls(b.realized)}">${m(b.realized)}</td><td>${b.win}</td><td>${b.loss}</td><td>${r.prices[s]!=null?r.prices[s]:"-"}</td></tr>`;
+  }
+  h += `</tbody></table></div>`;
+
+  /* ---- 配对后的真实战绩（round-trip） ---- */
+  const rt  = r.rtStat || {};
+  const rts = r.roundTrips || [];
+  h += `<div class="card" style="margin-top:16px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <h3 style="margin:0">真实战绩（开平仓配对后）</h3>
+      <span class="muted">${r.aggregate ? "合并加仓模式 · 同向加仓按加权均价并成 1 条" : "逐笔模式 · 每次加仓单独成条"} · 已扣双边手续费</span>
+      <span style="margin-left:auto"></span>
+      <button class="btn primary" onclick="bImportToJournal()">⬇ 同步到交易记录</button>
+    </div>
+    <div class="grid g-stats" style="margin-top:12px">
+      <div class="card stat"><div class="label">完整交易笔数</div><div class="value">${rt.n||0}</div><div class="sub">赢 ${rt.wins||0} / 亏 ${rt.losses||0} / 平 ${rt.flats||0}</div></div>
+      <div class="card stat"><div class="label">胜率</div><div class="value">${(rt.winRate||0).toFixed(1)}%</div><div class="sub">已决 ${rt.decided||0} 笔</div></div>
+      <div class="card stat"><div class="label">盈亏比 PF</div><div class="value">${rt.pf===Infinity?"∞":(rt.pf||0).toFixed(2)}</div><div class="sub">均盈 ${m(rt.avgWin||0)} / 均亏 ${m(-(rt.avgLoss||0))}</div></div>
+      <div class="card stat"><div class="label">期望值 / 笔</div><div class="value ${cls(rt.ev||0)}">${m(rt.ev||0)}</div><div class="sub">胜率×均盈 − 败率×均亏</div></div>
+      <div class="card stat"><div class="label">净盈亏(已扣费)</div><div class="value ${cls(rt.totalPnl||0)}">${m(rt.totalPnl||0)}</div><div class="sub">手续费合计 ${(rt.totalFee||0).toFixed(2)}</div></div>
+      <div class="card stat"><div class="label">平均持仓</div><div class="value">${bFmtHold(rt.avgHoldMs||0)}</div><div class="sub">最大盈 ${m(rt.maxWin||0)} / 最大亏 ${m(rt.maxLoss||0)}</div></div>
+    </div>
+  </div>`;
+
+  /* ---- 当前未平持仓 ---- */
+  const lots = r.openLots || [];
+  if(lots.length){
+    h += `<div class="card" style="margin-top:16px"><h3>当前未平持仓（FIFO 还原）</h3>
+      <div style="overflow-x:auto"><table><thead><tr><th>交易对</th><th>方向</th><th>数量</th><th>开仓均价</th><th>现价</th><th>浮动</th><th>开仓时间</th></tr></thead><tbody>`;
+    lots.forEach(l=>{
+      const cur  = r.prices[l.symbol];
+      const diff = (cur!=null && l.entryPrice) ? (l.direction==="做多" ? (cur-l.entryPrice) : (l.entryPrice-cur)) * l.qty : null;
+      h += `<tr><td>${esc(l.symbol)}</td><td>${l.direction==="做多"?'<span class="tag win">做多</span>':'<span class="tag loss">做空</span>'}</td><td>${(+l.qty).toFixed(4)}</td><td>${(+l.entryPrice).toFixed(4)}</td><td>${cur!=null?cur:"-"}</td><td class="${diff==null?"":cls(diff)}">${diff==null?"-":m(diff)}</td><td>${new Date(l.openTime).toLocaleString("zh-CN")}</td></tr>`;
+    });
+    h += `</tbody></table></div></div>`;
+  }
+
+  /* ---- 最近 round-trip 明细 ---- */
+  if(rts.length){
+    const recent = rts.slice(-25).reverse();
+    h += `<div class="card" style="margin-top:16px"><h3>最近平仓明细（共 ${rts.length} 笔完整交易，显示最近 ${recent.length} 笔）</h3>
+      <div style="overflow-x:auto"><table><thead><tr><th>平仓时间</th><th>交易对</th><th>方向</th><th>入场</th><th>出场</th><th>数量</th><th>持仓</th><th>净盈亏</th><th>盈亏%</th><th>手续费</th></tr></thead><tbody>`;
+    recent.forEach(t=>{
+      h += `<tr><td>${new Date(t.closeTime).toLocaleString("zh-CN")}</td><td>${esc(t.symbol)}</td><td>${esc(t.direction)}</td><td>${(+t.entryPrice).toFixed(4)}</td><td>${(+t.exitPrice).toFixed(4)}</td><td>${(+t.quantity).toFixed(4)}</td><td>${bFmtHold(t.holdMs)}</td><td class="${cls(t.pnl)}">${m(t.pnl)}</td><td class="${cls(t.pnl)}">${pct(t.pnlPct)}</td><td class="muted">${(+t.fee).toFixed(4)}</td></tr>`;
+    });
+    h += `</tbody></table></div></div>`;
+  }
+  return h;
+}
+
+/* ============ 导航 ============ */
+document.getElementById("nav").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-tab]");
+  if(!b) return;
+  switchTab(b.dataset.tab);
+});
+function switchTab(name){
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x.dataset.tab===name));
+  document.querySelectorAll("main section").forEach(s=>s.classList.remove("active"));
+  document.getElementById("tab-"+name).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+/* ============ 弹窗 ============ */
+function openModal(title, bodyHTML, onSave, saveText){
+  document.getElementById("modal-root").innerHTML = `
+    <div class="modal-mask" onclick="if(event.target===this)closeModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px">
+      <div style="background:var(--card);border-radius:14px;max-width:560px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)">
+          <span style="font-weight:600">${esc(title)}</span>
+          <button class="btn small" onclick="closeModal()">✕</button>
+        </div>
+        <div style="padding:18px;overflow:auto">${bodyHTML}</div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;padding:14px 18px;border-top:1px solid var(--border)">
+          <button class="btn" onclick="closeModal()">取消</button>
+          <button class="btn primary" onclick="document._modalSave()">${esc(saveText||"保存")}</button>
+        </div>
+      </div>
+    </div>`;
+  document._modalSave = onSave;
+}
+function closeModal(){ document.getElementById("modal-root").innerHTML=""; document._modalSave=null; }
+
+/* ============ 框架页 ============ */
+function renderFramework(){
+  const el = document.getElementById("tab-framework");
+  const ruleGroups = {};
+  RULE_CATS.forEach(c=>ruleGroups[c]=[]);
+  DB.rules.forEach(r=>{ (ruleGroups[r.category]=ruleGroups[r.category]||[]).push(r); });
+  const ruleHTML = RULE_CATS.map(cat=>{
+    const list = ruleGroups[cat]||[];
+    if(!list.length) return "";
+    return `<div class="card"><h3>${cat}</h3>
+      ${list.map(r=>`<div class="rule-item"><span class="rule-cat">${cat}</span><span class="rule-text">${esc(r.text)}</span></div>`).join("")}
+    </div>`;
+  }).join("");
+
+  el.innerHTML = `
+    <div class="card">
+      <h3>系统内核 · 四层决策闭环</h3>
+      <div class="flow">
+        <div class="flow-step"><span class="flow-num">1</span><div><div class="t">行情识别 · 先定环境</div><div class="muted">先看大盘/板块是「进攻(趋势) / 震荡 / 防守(下跌)」，再判断标的属趋势单还是震荡单，最后叠加周期（中长线/短线）。顺序不能反：先定市场 → 再定策略 → 最后选股。</div></div></div>
+        <div class="flow-step"><span class="flow-num">2</span><div><div class="t">策略匹配 · 市场决定打法</div><div class="muted">趋势市用突破/回踩买入+趋势持有；震荡市用区间下沿买、上沿卖。中长线靠逻辑驱动，短线靠量价驱动。不能用趋势策略做震荡市，反之亦然。</div></div></div>
+        <div class="flow-step"><span class="flow-num">3</span><div><div class="t">执行纪律 · 仓位 + 止损 + 心态</div><div class="muted">仓位由「单笔风险预算 ÷ 止损距离」反推；止损走价格/逻辑/时间三维；心态用右侧心法清单把易错点写死在动作前。</div></div></div>
+        <div class="flow-step"><span class="flow-num">4</span><div><div class="t">复盘进化 · 记录 + 分析 + 迭代</div><div class="muted">每笔记录市场状态、策略类型、盈亏、执行质量、心态点评；定期看胜率、盈亏比、期望值，用数据修正前三个环节。</div></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>多周期适配表 · 帮你定位</h3>
+      <table>
+        <thead><tr><th>周期</th><th>持有时间</th><th>看盘级别</th><th>核心驱动</th><th>与你的匹配度</th></tr></thead>
+        <tbody>
+          <tr><td><b>短线</b></td><td>日内 ~ 几天</td><td>分钟 / 日线</td><td>量价 + 情绪 + 资金流</td><td class="muted">每天 1-2 小时较难，仅限明确机会 + 条件单</td></tr>
+          <tr><td><b>波段</b> <span class="tag">默认主周期</span></td><td>几周 ~ 几月</td><td>日线 / 周线</td><td>逻辑 + 图形 + 趋势</td><td class="up">最适合你的时间投入</td></tr>
+          <tr><td><b>中长线</b></td><td>几月 ~ 几年</td><td>周线 / 月线</td><td>基本面 + 产业趋势</td><td class="up">适合做底仓，需耐心</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:10px">建议：以「波段」为主周期，中长线做底仓，短线只在明确信号 + 挂条件单时参与。周期不是身份标签，是每笔交易上标注的参数——同一套系统，靠周期参数切换。</p>
+    </div>
+
+    <div class="card">
+      <h3>风控要点 · 含加密 / 期货</h3>
+      <table>
+        <thead><tr><th>维度</th><th>规则</th></tr></thead>
+        <tbody>
+          <tr><td>单笔风险上限</td><td>账户资金的 1% ~ 2%（加密/期货高波动建议 ≤1%）</td></tr>
+          <tr><td>止损距离反推仓位</td><td>仓位 = 单笔风险预算 ÷ (入场价 - 止损价)</td></tr>
+          <tr><td>期货强平线</td><td>保证金刚离开强平价 30% 以上，杠杆不高于 5 倍（除非有成熟系统）</td></tr>
+          <tr><td>加密 7×24</td><td>睡觉前检查持仓与挂单，重大仓位不裸隔夜（除非设好止损）</td></tr>
+          <tr><td>相关性问题</td><td>同一板块/同一逻辑的多个头寸 = 一笔大仓位，合并计算风险</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    ${ruleHTML}
+
+    <div class="card">
+      <h3>心法清单 · 我的交易纪律</h3>
+      <p class="muted" style="margin-bottom:12px">这是你的「执行纪律」核心。可在「设置 → 心法清单」中增删改。下单前 30 秒过一遍与当前交易相关的条目。</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary" onclick="switchTab('marketlog')">开始记录行情 →</button>
+        <button class="btn" onclick="switchTab('settings')">编辑心法清单</button>
+      </div>
+    </div>`;
+}
+
+/* ============ 行情记录 ============ */
+function renderMarketLog(){
+  const el = document.getElementById("tab-marketlog");
+  const list = [...DB.marketLog].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  const rows = list.map((m,i)=>{
+    const origIdx = DB.marketLog.indexOf(m);
+    return `<tr>
+      <td>${esc(m.date)}</td>
+      <td>${esc(m.market)}</td>
+      <td>${esc(m.phase)}</td>
+      <td>${esc(m.cycle)}</td>
+      <td>${esc(m.note||"")}</td>
+      <td style="text-align:right"><button class="btn small danger" onclick="delMarketLog(${origIdx})">删除</button></td>
+    </tr>`;
+  }).join("");
+
+  el.innerHTML = `
+    <div class="toolbar">
+      <button class="btn primary" onclick="openMarketLogModal()">＋ 记录当前行情</button>
+      <div class="spacer"></div>
+      <span class="muted">共 ${DB.marketLog.length} 条环境记录</span>
+    </div>
+    <div class="grid g-2" style="margin-bottom:16px">
+      ${phaseDistCard()}
+      <div class="card"><h3>说明</h3>
+        <p class="muted">行情记录是「环境日志」，用于复盘时回答：我当时是在什么市场环境下做的这笔交易？</p>
+        <p class="muted" style="margin-top:8px">档位含义：进攻=上升趋势、可顺势做多；震荡=区间、只做高抛低吸；防守=下跌趋势、降仓或空仓。</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>环境记录</h3>
+      ${rows? `<table><thead><tr><th>日期</th><th>市场</th><th>档位</th><th>周期</th><th>备注</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+      : `<div class="empty"><div class="big">📋</div><p>还没有行情记录</p><button class="btn primary" onclick="openMarketLogModal()">记录第一条</button></div>`}
+    </div>`;
+}
+function phaseDistCard(){
+  const total = DB.marketLog.length || 1;
+  const count = {};
+  PHASES.forEach(p=>count[p]=0);
+  DB.marketLog.forEach(m=>{ if(count[m.phase]!=null) count[m.phase]++; });
+  const bars = PHASES.map(p=>{
+    const c = count[p];
+    const w = Math.round(c/total*100);
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${p}</span><span class="muted">${c} 次 · ${w}%</span></div>
+      <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden"><div style="height:100%;width:${w}%;background:${p.startsWith("进攻")?"var(--up)":p.startsWith("防守")?"var(--down)":"var(--warn)"};border-radius:4px"></div></div>
+    </div>`;
+  }).join("");
+  return `<div class="card"><h3>档位分布</h3>${bars}</div>`;
+}
+function openMarketLogModal(){
+  openModal("记录当前行情", `
+    <form id="mlForm">
+      <div class="field-row">
+        <div class="field"><label>日期</label><input type="date" id="ml_date" value="${today()}"></div>
+        <div class="field"><label>市场</label><select id="ml_market">${MARKETS.map(m=>`<option>${m}</option>`).join("")}</select></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>档位（环境）</label><select id="ml_phase">${PHASES.map(p=>`<option>${p}</option>`).join("")}</select></div>
+        <div class="field"><label>当前适合周期</label><select id="ml_cycle">${CYCLES.map(c=>`<option ${c==="波段"?"selected":""}>${c}</option>`).join("")}</select></div>
+      </div>
+      <div class="field"><label>备注（大盘/板块判断、信号、情绪等）</label><textarea id="ml_note" placeholder="如：大盘放量突破，科技板块主线，情绪回暖"></textarea></div>
+    </form>`,
+    ()=>saveMarketLog());
+}
+function saveMarketLog(){
+  const g=id=>document.getElementById(id).value.trim();
+  if(!g("ml_date")){alert("请选择日期");return;}
+  DB.marketLog.push({id:uid(), date:g("ml_date"), market:g("ml_market"), phase:g("ml_phase"), cycle:g("ml_cycle"), note:g("ml_note")});
+  save();closeModal();renderAll();
+}
+function delMarketLog(idx){
+  const m=DB.marketLog[idx];
+  if(!confirm("删除 "+m.date+" 的行情记录？"))return;
+  DB.marketLog.splice(idx,1);save();renderAll();
+}
+
+/* ============ 交易记录 ============ */
+function renderTrades(){
+  const el = document.getElementById("tab-trades");
+  const list = [...DB.trades].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  const rows = list.map(t=>{
+    const origIdx = DB.trades.indexOf(t);
+    const resultTag = t.result==="盈利" ? '<span class="tag win">盈利</span>'
+      : t.result==="亏损" ? '<span class="tag loss">亏损</span>'
+      : '<span class="tag flat">平手</span>';
+    const execTag = t.execQuality==="违反纪律" ? '<span class="tag bad">违反纪律</span>' : `<span class="tag">${esc(t.execQuality||"")}</span>`;
+    const autoTag = t.source==="binance-auto" ? ' <span class="tag" title="由币安 API 自动同步，含双边手续费">AUTO</span>' : "";
+    return `<tr>
+      <td><b>${esc(t.name||t.symbol)}</b>${autoTag}<div class="muted">${esc(t.symbol)} · ${esc(t.market)}</div></td>
+      <td>${esc(t.date)}</td>
+      <td>${esc(t.direction)}</td>
+      <td>${esc(t.cycle)}</td>
+      <td>${esc(t.strategy)}</td>
+      <td class="${pnlClass(t.pnl)}">${money(t.pnl)}</td>
+      <td class="${pnlClass(t.pnl)}">${pct(t.pnlPct)}</td>
+      <td>${resultTag}</td>
+      <td>${execTag}</td>
+      <td style="text-align:right"><div style="display:flex;gap:4px;justify-content:flex-end"><button class="btn small" onclick="openTradeModal(${origIdx})">编辑</button><button class="btn small danger" onclick="delTrade(${origIdx})">删</button></div></td>
+    </tr>`;
+  }).join("");
+
+  el.innerHTML = `
+    <div class="toolbar">
+      <button class="btn primary" onclick="openTradeModal()">＋ 记录交易</button>
+      <div class="spacer"></div>
+      <span class="muted">共 ${DB.trades.length} 笔</span>
+    </div>
+    <div class="card">
+      ${rows? `<div style="overflow-x:auto"><table>
+        <thead><tr><th>标的</th><th>日期</th><th>方向</th><th>周期</th><th>策略</th><th>盈亏</th><th>盈亏%</th><th>结果</th><th>执行</th><th></th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`
+      : `<div class="empty"><div class="big">📈</div><p>还没有交易记录</p><button class="btn primary" onclick="openTradeModal()">记录第一笔</button></div>`}
+    </div>`;
+}
+function openTradeModal(idx){
+  const t = idx!=null ? DB.trades[idx] : null;
+  const isEdit = !!t;
+  const v = (field,def)=> isEdit ? (t[field]??def) : def;
+  openModal((isEdit?"编辑":"记录")+"交易", `
+    <form id="trForm">
+      <div class="field-row">
+        <div class="field"><label>日期</label><input type="date" id="tr_date" value="${v("date",today())}"></div>
+        <div class="field"><label>市场</label><select id="tr_market">${MARKETS.map(m=>`<option ${v("market","")===m?"selected":""}>${m}</option>`).join("")}</select></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>代码 / 符号</label><input id="tr_symbol" value="${esc(v("symbol",""))}" placeholder="如 600000 / BTC / 螺纹"></div>
+        <div class="field"><label>名称</label><input id="tr_name" value="${esc(v("name",""))}" placeholder="如 浦发银行"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>方向</label><select id="tr_direction">${DIRECTIONS.map(d=>`<option ${v("direction","做多")===d?"selected":""}>${d}</option>`).join("")}</select></div>
+        <div class="field"><label>周期</label><select id="tr_cycle">${CYCLES.map(c=>`<option ${v("cycle","波段")===c?"selected":""}>${c}</option>`).join("")}</select></div>
+        <div class="field"><label>策略类型</label><select id="tr_strategy">${STRATEGIES.map(s=>`<option ${v("strategy","")===s?"selected":""}>${s}</option>`).join("")}</select></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>入场价</label><input type="number" step="any" id="tr_entry" value="${v("entryPrice","")}" placeholder="0.00"></div>
+        <div class="field"><label>出场价</label><input type="number" step="any" id="tr_exit" value="${v("exitPrice","")}" placeholder="0.00"></div>
+        <div class="field"><label>数量</label><input type="number" step="any" id="tr_qty" value="${v("quantity","")}" placeholder="股/枚/手"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>执行质量</label><select id="tr_exec">${EXEC_QUALITY.map(q=>`<option ${v("execQuality","")===q?"selected":""}>${q}</option>`).join("")}</select></div>
+        <div class="field"><label>盈亏（自动算，可覆盖）</label><input type="number" step="any" id="tr_pnl" value="${v("pnl","")}" placeholder="留空自动计算"></div>
+      </div>
+      <div class="field"><label>心态点评（这笔交易的心态问题）</label><textarea id="tr_emotion" placeholder="如：追高买入、没按计划止损、拿不住盈利...">${esc(v("emotionNote",""))}</textarea></div>
+      <div class="field"><label>教训 / 心得</label><textarea id="tr_lesson" placeholder="如：下次突破回踩再进，不追高">${esc(v("lesson",""))}</textarea></div>
+    </form>`,
+    ()=>saveTrade(idx));
+  // 自动算盈亏
+  setTimeout(()=>{
+    const e=document.getElementById("tr_entry"), x=document.getElementById("tr_exit"), q=document.getElementById("tr_qty"), d=document.getElementById("tr_direction"), p=document.getElementById("tr_pnl");
+    const calc=()=>{
+      if(p.value!=="" && p.value!=null) return; // 用户手填则不覆盖
+      const ev=parseFloat(e.value), xv=parseFloat(x.value), qv=parseFloat(q.value);
+      if(!isNaN(ev) && !isNaN(xv) && !isNaN(qv)){
+        const sign = d.value==="做空" ? -1 : 1;
+        const pnl = (xv-ev)*qv*sign;
+        p.value = pnl.toFixed(2);
+      }
+    };
+    [e,x,q,d].forEach(n=>n.addEventListener("input",calc));
+  },50);
+}
+function saveTrade(idx){
+  const g=id=>document.getElementById(id).value.trim();
+  if(!g("tr_date")){alert("请选择日期");return;}
+  const entry=parseFloat(g("tr_entry"))||0, exit=parseFloat(g("tr_exit"))||0, qty=parseFloat(g("tr_qty"))||0;
+  const direction=g("tr_direction");
+  const sign = direction==="做空" ? -1 : 1;
+  let pnl = g("tr_pnl")!=="" ? parseFloat(g("tr_pnl")) : (exit-entry)*qty*sign;
+  pnl = +pnl.toFixed(2);
+  const pnlPct = entry>0 ? ((exit-entry)/entry*sign*100) : 0;
+  const result = pnl>0 ? "盈利" : pnl<0 ? "亏损" : "平手";
+  const obj = {
+    date:g("tr_date"), market:g("tr_market"), symbol:g("tr_symbol"), name:g("tr_name")||g("tr_symbol"),
+    direction, cycle:g("tr_cycle"), strategy:g("tr_strategy"),
+    entryPrice:entry, exitPrice:exit, quantity:qty,
+    pnl, pnlPct:+pnlPct.toFixed(2), result,
+    execQuality:g("tr_exec"), emotionNote:g("tr_emotion"), lesson:g("tr_lesson")
+  };
+  if(idx!=null){ DB.trades[idx]=Object.assign(DB.trades[idx],obj); }
+  else{ obj.id=uid(); DB.trades.push(obj); }
+  save();closeModal();renderAll();
+}
+function delTrade(idx){
+  const t=DB.trades[idx];
+  if(!confirm("删除交易「"+(t.name||t.symbol)+"」？"))return;
+  DB.trades.splice(idx,1);save();renderAll();
+}
+
+/* ============ 复盘分析 ============ */
+function computeStats(){
+  const trades = DB.trades;
+  const wins = trades.filter(t=>t.result==="盈利");
+  const losses = trades.filter(t=>t.result==="亏损");
+  const flats = trades.filter(t=>t.result==="平手");
+  const decided = wins.length+losses.length;
+  const winRate = decided ? wins.length/decided*100 : 0;
+  const avgWin = wins.length ? wins.reduce((s,t)=>s+(+t.pnl||0),0)/wins.length : 0;
+  const avgLoss = losses.length ? Math.abs(losses.reduce((s,t)=>s+(+t.pnl||0),0)/losses.length) : 0;
+  const profitFactor = avgLoss>0 ? avgWin/avgLoss : (avgWin>0?Infinity:0);
+  const totalPnl = trades.reduce((s,t)=>s+(+t.pnl||0),0);
+  const ev = decided ? (winRate/100*avgWin - (1-winRate/100)*avgLoss) : 0;
+  return {trades, wins, losses, flats, decided, winRate, avgWin, avgLoss, profitFactor, totalPnl, ev};
+}
+function groupStats(key, label){
+  const map = {};
+  DB.trades.forEach(t=>{
+    const k = t[key] || "未标注";
+    map[k] = map[k] || {n:0, win:0, loss:0, pnl:0};
+    map[k].n++;
+    if(t.result==="盈利")map[k].win++;
+    if(t.result==="亏损")map[k].loss++;
+    map[k].pnl += (+t.pnl||0);
+  });
+  return Object.entries(map).map(([k,v])=>{
+    const decided = v.win+v.loss;
+    const wr = decided ? (v.win/decided*100) : 0;
+    return {k, n:v.n, wr, pnl:v.pnl};
+  });
+}
+function groupTable(key, label, rows){
+  if(!rows.length) return `<p class="muted">暂无数据</p>`;
+  const sorted=[...rows].sort((a,b)=>b.pnl-a.pnl);
+  return `<table><thead><tr><th>${label}</th><th>笔数</th><th>胜率</th><th>累计盈亏</th></tr></thead>
+    <tbody>${sorted.map(r=>`<tr><td>${esc(r.k)}</td><td>${r.n}</td><td>${r.wr.toFixed(0)}%</td><td class="${pnlClass(r.pnl)}">${money(r.pnl)}</td></tr>`).join("")}</tbody></table>`;
+}
+function renderAnalysis(){
+  const el = document.getElementById("tab-analysis");
+  const s = computeStats();
+  const pfDisplay = s.profitFactor===Infinity ? "∞（无亏损单）" : s.profitFactor.toFixed(2);
+  el.innerHTML = `
+    <div class="grid g-stats" style="margin-bottom:16px">
+      <div class="card stat"><div class="label">总笔数</div><div class="value">${s.trades.length}</div><div class="sub">赢 ${s.wins.length} / 亏 ${s.losses.length} / 平 ${s.flats.length}</div></div>
+      <div class="card stat"><div class="label">胜率</div><div class="value">${s.winRate.toFixed(1)}%</div><div class="sub">盈利笔 ÷ 已决笔</div></div>
+      <div class="card stat"><div class="label">盈亏比</div><div class="value">${pfDisplay}</div><div class="sub">平均盈利 ÷ 平均亏损</div></div>
+      <div class="card stat"><div class="label">期望值 / 笔</div><div class="value ${pnlClass(s.ev)}">${money(s.ev)}</div><div class="sub">胜率×均盈 − 败率×均亏</div></div>
+      <div class="card stat"><div class="label">累计盈亏</div><div class="value ${pnlClass(s.totalPnl)}">${money(s.totalPnl)}</div><div class="sub">全部交易合计</div></div>
+    </div>
+    <div class="grid g-2">
+      <div class="card"><h3>按策略类型</h3>${groupTable("strategy","策略", groupStats("strategy","策略"))}</div>
+      <div class="card"><h3>按周期</h3>${groupTable("cycle","周期", groupStats("cycle","周期"))}</div>
+    </div>
+    <div class="grid g-2" style="margin-top:16px">
+      <div class="card"><h3>按市场</h3>${groupTable("market","市场", groupStats("market","市场"))}</div>
+      <div class="card"><h3>按方向</h3>${groupTable("direction","方向", groupStats("direction","方向"))}</div>
+    </div>
+    <div class="card">
+      <h3>如何读这张表</h3>
+      <p class="muted">① 期望值 &gt; 0 且胜率稳定，说明系统有效；② 找出「累计盈亏为负的策略/周期」，那是要修正或放弃的；③ 盈亏比 &lt; 1 时，即使胜率高也要警惕（赚小亏大）；④ 结合「执行质量」标签，区分是系统问题还是纪律问题。</p>
+    </div>`;
+}
+
+/* ============ 设置 ============ */
+function renderSettings(){
+  const el = document.getElementById("tab-settings");
+  const ruleRows = DB.rules.map(r=>{
+    const idx = DB.rules.indexOf(r);
+    return `<div class="rule-item"><span class="rule-cat">${esc(r.category)}</span><span class="rule-text">${esc(r.text)}</span>
+      <span class="rule-ops"><button class="btn small" onclick="editRule(${idx})">编辑</button><button class="btn small danger" onclick="delRule(${idx})">删</button></span>
+    </div>`;
+  }).join("");
+  el.innerHTML = `
+    <div class="card">
+      <h3>心法清单 · 我的交易纪律</h3>
+      <p class="muted" style="margin-bottom:12px">这些条目是「执行纪律」的核心，下单前过一遍。可自由增删改，改成你自己的话最有效。</p>
+      <button class="btn primary" onclick="openRuleModal()" style="margin-bottom:14px">＋ 新增心法</button>
+      ${ruleRows || `<p class="muted">暂无，点上方新增</p>`}
+    </div>
+    ${renderCloudSyncArea()}
+    <div class="card">
+      <h3>数据管理</h3>
+      <p class="muted" style="margin-bottom:14px">数据保存在当前浏览器本地。建议定期导出备份，换设备/清缓存前务必先导出。</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" onclick="exportData()">⬇ 导出备份</button>
+        <button class="btn" onclick="document.getElementById('importFile').click()">⬆ 导入备份</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" onclick="loadSample()">载入示例数据</button>
+        <button class="btn danger" onclick="clearAll()">清空所有数据</button>
+      </div>
+    </div>`;
+}
+
+/* ============ 云同步卡片（与个人财务管家共用 Supabase） ============ */
+function renderCloudSyncArea(){
+  const cfg = sbGetCfg();
+  if(!cfg.url || !cfg.anonKey){
+    return `<div class="card"><h3>☁ 云同步</h3>
+      <p class="muted" style="margin-bottom:12px;font-size:12px">把复盘数据同步到云端，电脑和手机登录同一账号即可看到同一份数据。<br><b>注意</b>：本工具与「个人财务管家」共用同一个 Supabase 项目配置。如果你在那边已配过，这里填同样的 URL + anon key 即可。</p>
+      <button class="btn primary" onclick="openSupabaseWizard()">📋 打开配置向导</button>
+    </div>`;
+  }
+  if(sbUser){
+    return `<div class="card"><h3>☁ 云同步</h3>
+      <p class="muted" style="margin-bottom:12px;font-size:12px">已登录 <b>${esc(sbUser.email||"")}</b>。<span id="syncStatus"></span></p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" onclick="cloudPushNow()">⬆ 立即推送本地到云</button>
+        <button class="btn" onclick="cloudPullNow()">⬇ 从云拉取覆盖本地</button>
+        <button class="btn danger" onclick="cloudResetAndPush()" style="background:#fff7ed;color:#9a3412;border-color:#fdba74" title="另一台设备数据丢失时，先点这个">⚠ 强制重置云端并重传</button>
+        <button class="btn" onclick="cloudLogout()">退出登录</button>
+        <button class="btn" onclick="modifyCloudCfg()" title="修改 URL 或 anon key">⚙ 修改配置</button>
+      </div>
+      <p class="muted" style="margin-top:10px;font-size:12px">自动同步：每次保存本地数据后约 2 秒自动推送到云。</p>
+    </div>`;
+  }
+  return `<div class="card"><h3>☁ 云同步</h3>
+    <p class="muted" style="margin-bottom:12px;font-size:12px">已配置 Supabase，但未登录。邮箱密码登录即可同步。<br>如果在「个人财务管家」里已注册过同一账号，这里直接登录即可看到同一份数据（按 _meta.tool 区分，不会互相覆盖）。</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn primary" onclick="openAuthModal('login')">登录</button>
+      <button class="btn" onclick="openAuthModal('register')">注册新账号</button>
+      <button class="btn" onclick="modifyCloudCfg()" title="修改 URL 或 anon key">⚙ 修改配置</button>
+    </div>
+  </div>`;
+}
+
+function openSupabaseWizard(){
+  openModal("📋 Supabase 配置向导", `
+    <div style="line-height:1.7;font-size:13px;max-height:60vh;overflow:auto">
+      <p><b>1. 注册并建项目</b>：访问 <a href="https://supabase.com/" target="_blank" style="color:var(--accent)">supabase.com</a>，新建项目，区域选 <code>Singapore</code> 或 <code>Tokyo</code>。</p>
+      <p><b>2. 建表</b>：左侧 <code>SQL Editor</code> → <code>New query</code> → 把 <code>supabase-init.sql</code> 全部内容粘贴进去 → <code>Run</code>。看到 <code>Success</code> 即成。</p>
+      <p><b>3. 拿到两个密钥</b>：左侧 <code>Project Settings</code>（⚙ 齿轮）→ <code>API</code>，复制：</p>
+      <ul style="margin-left:20px">
+        <li><b>Project URL</b>（形如 <code>https://xxxx.supabase.co</code>）</li>
+        <li><b>anon public key</b>（长串以 <code>eyJ...</code> 开头的 JWT）</li>
+      </ul>
+      <p>⚠️ <b>千万不要复制 service_role key</b>——那是有全部权限的密钥。</p>
+      <p><b>4. 关掉邮箱确认</b>（推荐）：左侧 <code>Authentication → Providers → Email</code>，把 <code>Confirm email</code> 关掉，省去点击邮件确认步骤。</p>
+      <hr style="margin:14px 0;border:none;border-top:1px solid var(--border)">
+      <p><b>两个工具共用配置</b>：本工具与「个人财务管家」共用同一个 Supabase 项目。如果你那边已配过，填一样的 URL + anon key 即可，两个工具的数据在云端互不干扰（靠 <code>_meta.tool</code> 字段区分）。</p>
+      <div class="field"><label>Project URL</label><input id="sb_url" placeholder="https://xxxx.supabase.co" value="${esc(sbGetCfg().url||"")}"></div>
+      <div class="field" style="margin-top:10px"><label>anon public key</label><textarea id="sb_key" rows="3" placeholder="eyJhbGciOi...">${esc(sbGetCfg().anonKey||"")}</textarea></div>
+    </div>
+  `, ()=>{
+    const url = (document.getElementById("sb_url").value||"").trim();
+    const key = (document.getElementById("sb_key").value||"").trim();
+    if(!url || !key){ alert("URL 与 key 都不能为空"); return; }
+    sbSetCfg({url, anonKey: key});
+    sbClient = null; sbUser = null;
+    if(window.supabase && window.supabase.auth){ try{ window.supabase.auth.signOut(); }catch(e){} }
+    closeModal(); renderSettings();
+    alert("配置已保存。请登录或注册。");
+  }, "保存配置");
+}
+
+function modifyCloudCfg(){ openSupabaseWizard(); }
+
+function saveCloudCfg(){
+  const url = (document.getElementById("sb_url")?.value||"").trim();
+  const key = (document.getElementById("sb_key")?.value||"").trim();
+  if(!url || !key){ alert("URL 与 key 都不能为空"); return; }
+  sbSetCfg({url, anonKey: key});
+  renderSettings();
+}
+
+function openAuthModal(mode){
+  const cfg = sbGetCfg();
+  if(!cfg.url || !cfg.anonKey){ alert("请先配置 Supabase URL 与 anon key"); return; }
+  openModal(mode==="register"?"注册新账号":"登录", `
+    <div class="field"><label>邮箱</label><input type="email" id="sb_email" placeholder="you@example.com"></div>
+    <div class="field" style="margin-top:10px"><label>密码（至少 6 位）</label><input type="password" id="sb_password" placeholder="********"></div>
+    <p class="muted" id="sb_msg" style="margin-top:10px;font-size:12px"></p>
+  `, async ()=>{
+    const email = (document.getElementById("sb_email").value||"").trim();
+    const password = document.getElementById("sb_password").value||"";
+    const msg = document.getElementById("sb_msg");
+    msg.style.color = "var(--muted)"; msg.textContent = "处理中...";
+    if(!email || !password){ msg.style.color="var(--up)"; msg.textContent="请填写邮箱和密码"; return; }
+    try{
+      sbClient = await sbEnsureClient();
+      const res = mode==="register"
+        ? await sbClient.auth.signUp({email, password})
+        : await sbClient.auth.signInWithPassword({email, password});
+      if(res.error){ msg.style.color="var(--up)"; msg.textContent = res.error.message; return; }
+      sbUser = (res.data && res.data.user) || null;
+      if(!sbUser){ msg.style.color="var(--warn)"; msg.textContent="未返回用户对象。"; return; }
+      setSyncBadge("ok","已登录");
+      const localNonEmpty = (DB.marketLog.length + DB.trades.length + DB.rules.filter(r=>!defaultRules().some(dr=>dr.text===r.text)).length) > 0;
+      closeModal();
+      await reconcileAfterLogin(localNonEmpty);
+      renderSettings();
+    }catch(e){
+      msg.style.color="var(--up)"; msg.textContent = e.message||String(e);
+    }
+  }, mode==="register"?"注册":"登录");
+  setTimeout(()=>document.getElementById("sb_email")?.focus(), 60);
+}
+
+async function cloudLogout(){
+  if(!sbClient) return;
+  if(!confirm("退出登录后，本设备的数据仍保留。确定退出？")) return;
+  try{ await sbClient.auth.signOut(); }catch(e){}
+  sbUser = null;
+  setSyncBadge(null, "未登录");
+  renderSettings();
+}
+
+async function reconcileAfterLogin(localNonEmpty){
+  let remote = null;
+  try{ remote = await sbLoadRow(); }catch(e){ console.warn(e); }
+  // _meta.tool 校验：另一个工具的数据不应该被误加载
+  if(remote && remote._meta && remote._meta.tool && remote._meta.tool !== PRODUCT_ID){
+    const yes = confirm("云端有「"+(remote._meta.tool==="finance"?"个人财务管家":"另一个工具")+"」的数据，但本工具尚未同步过。\n是否继续（云端目前对本工具来说为空）？");
+    if(!yes) return;
+    remote = null;
+  }
+  const remoteEmpty = !remote || ((!remote.marketLog || !remote.marketLog.length) && (!remote.trades || !remote.trades.length));
+  if(remoteEmpty && localNonEmpty){
+    if(confirm("云端无「交易系统」数据。是否把当前浏览器内的本地数据推到云端？\n（取消则只登录查看，不上传）")){
+      await sbSaveRow(dbToCloudPayload());
+      alert("本地数据已推到云端 ✅");
+    }
+  } else if(!remoteEmpty && !localNonEmpty){
+    if(confirm("云端已有交易系统数据，本地为空。是否拉取到本设备？")){
+      cloudPayloadToDB(remote); save(); renderAll();
+    }
+  } else if(!remoteEmpty && localNonEmpty){
+    const choice = prompt("本地与云端都有数据。请选择处理方式：\n1 - 用本地覆盖云端\n2 - 用云端覆盖本地（覆盖前自动备份）\n3 - 暂不处理\n输入 1/2/3：");
+    if(choice==="1"){ await sbSaveRow(dbToCloudPayload()); alert("已用本地覆盖云端 ✅"); }
+    else if(choice==="2"){
+      exportDataSilent();
+      cloudPayloadToDB(remote); save(); renderAll();
+      alert("已用云端覆盖本地（已自动备份原数据）");
+    }
+  }
+}
+
+async function cloudPushNow(){
+  try{
+    sbClient = await sbEnsureClient();
+    if(!sbUser){ sbUser = await sbWaitForUser(); }
+    if(!sbUser){ alert("请先登录"); return; }
+    setSyncBadge("saving","推送中...");
+    await sbSaveRow(dbToCloudPayload());
+    setSyncStatus("已推送 ✅");
+    setSyncBadge("ok","已同步");
+  }catch(e){ setSyncStatus("推送失败: " + e.message, true); setSyncBadge("error","推送失败"); alert("推送失败："+e.message); }
+}
+async function cloudPullNow(){
+  if(!confirm("从云拉取将覆盖当前浏览器内的本地数据（同步前自动备份）。继续？")) return;
+  exportDataSilent();
+  try{
+    sbClient = await sbEnsureClient();
+    if(!sbUser){ sbUser = await sbWaitForUser(); }
+    if(!sbUser){ alert("请先登录"); return; }
+    setSyncBadge("saving","拉取中...");
+    const remote = await sbLoadRow();
+    if(!remote){ setSyncStatus("云端无数据"); alert("云端尚无数据。"); return; }
+    if(remote._meta && remote._meta.tool && remote._meta.tool !== PRODUCT_ID){
+      alert("云端数据来自「"+(remote._meta.tool==="finance"?"个人财务管家":"另一个工具")+"」，不会拉取到本工具。");
+      setSyncBadge(null,"未登录");
+      return;
+    }
+    cloudPayloadToDB(remote); save(); renderAll();
+    setSyncStatus("已拉取 ✅");
+    setSyncBadge("ok","已同步");
+    alert("已从云端拉取并覆盖本地。");
+  }catch(e){ setSyncStatus("拉取失败: " + e.message, true); setSyncBadge("error","拉取失败"); alert("拉取失败："+e.message); }
+}
+
+async function cloudResetAndPush(){
+  if(!confirm("⚠️ 这个操作会清空云端原有的「交易系统」数据，然后用本设备的完整数据重新上传。\n\n继续前请确认：\n ① 本设备的「交易记录」「行情记录」是完整的\n ② 你要的是把当前数据当作「正确版本」\n\n另一个工具的数据不会被影响（靠 _meta.tool 隔离）。\n\n确定继续？")) return;
+  try{
+    sbClient = await sbEnsureClient();
+    if(!sbUser){ sbUser = await sbWaitForUser(); }
+    if(!sbUser){ alert("请先登录"); return; }
+    setSyncBadge("saving","重置中...");
+    await sbDeleteRow();
+    await sbSaveRow(dbToCloudPayload());
+    setSyncStatus("云端已重置并重新上传 ✅");
+    setSyncBadge("ok","已同步");
+    alert("云端已清空并用本设备的完整数据覆盖。\n下一步：在另一台设备上强制刷新页面 → 设置 → 云同步 → 点「从云拉取覆盖本地」。");
+  }catch(e){ setSyncStatus("重置失败: " + e.message, true); setSyncBadge("error","重置失败"); alert("重置失败："+e.message); }
+}
+
+function exportDataSilent(){
+  const blob = new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "交易系统自动备份-"+today()+".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function sbInitOnLoad(){
+  const cfg = sbGetCfg();
+  if(!cfg.url || !cfg.anonKey){ setSyncBadge(null, "未配置"); return; }
+  try{
+    sbClient = await sbEnsureClient();
+    const { data } = await sbClient.auth.getSession();
+    sbUser = data?.session?.user || null;
+    if(sbUser){
+      setSyncBadge("ok","已登录");
+      sbClient.auth.onAuthStateChange((_event, session)=>{
+        sbUser = session?.user || null;
+        setSyncBadge(sbUser ? "ok" : null, sbUser ? "已登录" : "未登录");
+        renderSettings();
+      });
+    }else{
+      setSyncBadge(null, "未登录");
+    }
+  }catch(e){
+    console.warn("supabase init failed:", e);
+    setSyncBadge("error","初始化失败");
+  }
+  renderSettings();
+}
+function openRuleModal(idx){
+  const r = idx!=null ? DB.rules[idx] : null;
+  const isEdit = !!r;
+  openModal((isEdit?"编辑":"新增")+"心法", `
+    <form>
+      <div class="field-row">
+        <div class="field"><label>分类</label><select id="rule_cat">${RULE_CATS.map(c=>`<option ${r&&r.category===c?"selected":""}>${c}</option>`).join("")}</select></div>
+      </div>
+      <div class="field"><label>内容</label><textarea id="rule_text" placeholder="一句话心法，越具体越好">${esc(r?r.text:"")}</textarea></div>
+    </form>`,
+    ()=>saveRule(idx));
+}
+function saveRule(idx){
+  const cat = document.getElementById("rule_cat").value;
+  const text = document.getElementById("rule_text").value.trim();
+  if(!text){alert("内容不能为空");return;}
+  const obj = {id: idx!=null?DB.rules[idx].id:uid(), category:cat, text};
+  if(idx!=null){ DB.rules[idx]=obj; } else { DB.rules.push(obj); }
+  save();closeModal();renderAll();
+}
+function editRule(idx){ openRuleModal(idx); }
+function delRule(idx){
+  if(!confirm("删除这条心法？"))return;
+  DB.rules.splice(idx,1);save();renderAll();
+}
+
+/* ============ 数据导入导出 ============ */
+function exportData(){
+  const blob = new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "交易系统备份-"+today()+".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importData(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const d = JSON.parse(reader.result);
+      if(!d || typeof d!=="object") throw new Error("格式错误");
+      DB = Object.assign(defaultDB(), d);
+      if(!Array.isArray(DB.rules)||!DB.rules.length) DB.rules = defaultRules();
+      save();renderAll();
+      showToast("✓ 导入成功");
+    }catch(e){ alert("导入失败："+e.message); }
+  };
+  reader.readAsText(file);
+  input.value = "";
+}
+function loadSample(){
+  if(DB.trades.length || DB.marketLog.length){
+    if(!confirm("已有数据，载入示例会覆盖。确定？"))return;
+  }
+  DB = defaultDB();
+  DB.marketLog = [
+    {id:uid(),date:"2026-09-01",market:"A股",phase:"进攻(趋势)",cycle:"波段",note:"大盘放量突破，科技板块主线"},
+    {id:uid(),date:"2026-09-03",market:"A股",phase:"震荡",cycle:"波段",note:"高位横盘，量能萎缩，等待方向"},
+    {id:uid(),date:"2026-09-05",market:"加密货币",phase:"防守(下跌)",cycle:"短线",note:"BTC 破位下行，情绪转弱"}
+  ];
+  DB.trades = [
+    {id:uid(),date:"2026-09-01",market:"A股",symbol:"600000",name:"浦发银行",direction:"做多",cycle:"波段",strategy:"趋势突破",entryPrice:8.5,exitPrice:9.4,quantity:2000,pnl:1800,pnlPct:10.59,result:"盈利",execQuality:"到位",emotionNote:"按计划突破买入",lesson:"突破回踩确认后再进更稳"},
+    {id:uid(),date:"2026-09-02",market:"A股",symbol:"000858",name:"五粮液",direction:"做多",cycle:"波段",strategy:"趋势回踩",entryPrice:135,exitPrice:128,quantity:100,pnl:-700,pnlPct:-5.19,result:"亏损",execQuality:"到位",emotionNote:"止损执行到位",lesson:"回踩买点选在了下跌中继"},
+    {id:uid(),date:"2026-09-04",market:"加密货币",symbol:"BTC",name:"比特币",direction:"做空",cycle:"短线",strategy:"反转",entryPrice:56000,exitPrice:54000,quantity:0.5,pnl:1000,pnlPct:3.57,result:"盈利",execQuality:"违反纪律",emotionNote:"没到计划点位就抢跑",lesson:"抢跑侥幸盈利，下次会亏回去"}
+  ];
+  save();renderAll();
+  showToast("已载入示例数据");
+}
+function clearAll(){
+  if(!confirm("确定清空所有数据？此操作不可恢复，建议先导出备份。"))return;
+  DB = defaultDB();save();renderAll();
+}
+
+/* ============ 渲染入口 ============ */
+function renderAll(){
+  renderFramework();
+  renderMarketLog();
+  renderTrades();
+  renderAnalysis();
+  renderSettings();
+}
+
+/* ============ 启动 ============ */
+initTheme();
+initBinance();
+setSyncBadge(null, "未配置");
+renderAll();
+// 异步恢复 Supabase 登录会话（不阻塞界面）
+setTimeout(()=>sbInitOnLoad(), 80);
+// 检测桥接数据（来自财务管家的卖出）
+setTimeout(()=>checkBridgePending(), 120);
+
+/* ============ 桥接接收：财务管家的卖出记录 → 导入到复盘表 ============ */
+function checkBridgePending(){
+  try{
+    const raw = localStorage.getItem("ts_bridge");
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    if(!data || !Array.isArray(data.pending) || data.pending.length===0) return;
+    const list = data.pending;
+    const lines = list.slice(0,5).map(it=>{
+      const sign = it.pnl>=0?"+":"";
+      return `· ${it.date||"?"} ${it.name||it.symbol} ${esc(it.direction||"做多")} pnl=${sign}${(+it.pnl||0).toFixed(2)} (提示策略:${esc(it.strategy_hint||"-")})`;
+    }).join("\n");
+    const more = list.length>5 ? `\n...还有 ${list.length-5} 笔` : "";
+    if(!confirm("检测到来自「个人财务管家」的 "+list.length+" 笔卖出记录，是否导入到复盘表？\n\n"+lines+more+"\n\n（导入后会从队列里移除；填好策略/盈亏，你只需要补心态点评和教训）")) return;
+    let imported = 0;
+    list.forEach(it=>{
+      const obj = {
+        id: uid(),
+        date: it.date || today(),
+        market: it.market || "A股",
+        symbol: it.symbol || "",
+        name: it.name || it.symbol || "",
+        direction: it.direction || "做多",
+        cycle: it.cycle || "波段",
+        strategy: it.strategy_hint || "其他",
+        entryPrice: +it.entryPrice||0,
+        exitPrice: +it.exitPrice||0,
+        quantity: +it.quantity||0,
+        pnl: +it.pnl||0,
+        pnlPct: +it.pnlPct||0,
+        result: (+it.pnl||0)>0?"盈利":(+it.pnl||0)<0?"亏损":"平手",
+        execQuality: "到位",
+        emotionNote: "",
+        lesson: ""
+      };
+      // 简化公式：bridge 入库时 pnl 已折算为人民币，不要二次折算
+      // 但如果 schema 有重复换算的风险，可以在这里加上 ¥ 注记
+      DB.trades.push(obj);
+      imported++;
+    });
+    localStorage.removeItem("ts_bridge");
+    save();
+    renderAll();
+    showToast(`✓ 已导入 ${imported} 笔交易记录`);
+    alert("已导入 "+imported+" 笔到「交易记录」页。请补一下「心态点评」和「教训」字段（这是最有价值的部分）。");
+  }catch(e){ console.warn("bridge parse failed:", e); }
+}
+</script>
+</body>
+</html>
